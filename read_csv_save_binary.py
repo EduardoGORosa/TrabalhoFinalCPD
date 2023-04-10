@@ -2,11 +2,11 @@ import csv
 import struct
 import os
 
-STRUCT_BYTES = 316
-INDEX_BYTES = 54
+STRUCT_BYTES = 216
+INDEX_ID_BYTES = 8
+INDEX_NAME_BYTES = 54
 
 games = []
-
 
 def get_quant_games(file):
     
@@ -16,62 +16,45 @@ def get_quant_games(file):
 
 
 def read_from_csv_file():
-    # Open the CSV file in read mode
     with open('steam.csv', 'r', encoding="utf-8") as csv_file:
         csv_reader = csv.DictReader(csv_file)
-        
-        # Pack the data from the CSV file into a binary string
         packed_data = b''
         for row in csv_reader:
-            # Use the appropriate format string for each field
             games.append(row)
         
     return games
 
 
 def write_into_b_file():
-    # # Open a binary file in write mode
     with open('steam.bin', 'wb') as bin_file:
-        # Write the packed binary string to the binary file
         for game in games:
-            packed_data = struct.pack('i50s50s10s50s100siiii30sf', 
+            packed_data = struct.pack('i50s50s10s50siiii30sf', 
                                         int(game['appid']), game['name'].encode(), game['developer'].encode(),
-                                        game['release_date'].encode(), game['genres'].encode(), game['steamspy_tags'].encode(),
+                                        game['release_date'].encode(), game['genres'].encode(),
                                         int(game['positive_ratings']), int(game['negative_ratings']), int(game['average_playtime']),
-                                        int(game['median_playtime']), game['owners'].encode(), float(game['price']))
+                                        int(game['median_playtime']), game['owners'].encode(), round(float(game['price']),2))
             bin_file.write(packed_data)
 
-def read_from_b_file():
-    # Open the CSV file in read mode
-    with open('steam.bin', 'rb') as file:
-        
-        games = get_quant_games()
-        file.seek(316 * 1000)
-        data = file.read(316 * 1000)
-            # Use the appropriate format string for each field
-        unpacked_data = struct.unpack(1000 * 'i50s50s10s50s100siiii30sf', data)
-
-        print(unpacked_data)
-        print(unpacked_data[1].decode('utf-8', errors='replace'))
+def index_file_position_id():
+    with open('ids.bin', 'wb') as bin_file:
+        for i,game in enumerate(games):
+            packed_data = struct.pack('ii', i, int(game['appid']))
+            bin_file.write(packed_data)
 
 def index_file_id_name():
-    #read_from_csv_file()
-
-    with open('btree.bin', 'wb') as bin_file:
-        for game in games:
+    with open('names.bin', 'wb') as bin_file:
+        for i,game in enumerate(games):
             packed_data = struct.pack('i50s', int(game['appid']), game['name'].encode())
             bin_file.write(packed_data)
         
 def read_from_index_file():
-    # Open the CSV file in read mode
-    with open('btree.bin', 'rb') as file:
-        
-        data = file.read(INDEX_BYTES)
-            # Use the appropriate format string for each field
-        unpacked_data = struct.unpack('i50s', data)
+    index_games = []
+    with open('ids.bin', 'rb') as file:     
+        games = get_quant_games('ids.bin') // INDEX_ID_BYTES
+        for i in range(games):
+            file.seek(i*INDEX_ID_BYTES)
+            data = file.read(INDEX_ID_BYTES)
+            unpacked_data = struct.unpack('ii', data)
+            index_games.append(unpacked_data)
 
-        #print(unpacked_data)
-
-index_file_id_name()
-#read_from_index_file()
-
+    return index_games
