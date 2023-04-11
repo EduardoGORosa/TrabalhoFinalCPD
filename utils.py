@@ -68,7 +68,7 @@ def search_by_best():
             file.seek(i * INDEX_GRADE_BYTES)
             data = file.read(INDEX_GRADE_BYTES)
             unpacked_data = struct.unpack('iiif', data)
-            formated_data = {'id': int(unpacked_data[0]), 'grade': round(((int(unpacked_data[1]) - int(unpacked_data[2])) / float(unpacked_data[3])) * 1000, 2)}
+            formated_data = {'id': int(unpacked_data[0]), 'grade': round(((int(unpacked_data[1]) - int(unpacked_data[2])) * float(unpacked_data[3])) / 1000, 2)}
             games.append(formated_data)
 
     best_grades = heapq.nlargest(10, games, key=lambda x: x['grade'])
