@@ -5,6 +5,7 @@ import os
 STRUCT_BYTES = 216
 INDEX_ID_BYTES = 8
 INDEX_NAME_BYTES = 54
+INDEX_GRADE_BYTES = 16
 
 games = []
 
@@ -46,6 +47,12 @@ def index_file_id_name():
         for i,game in enumerate(games):
             packed_data = struct.pack('i50s', int(game['appid']), game['name'].encode())
             bin_file.write(packed_data)
+
+def index_file_id_grades():
+    with open('grades.bin', 'wb') as bin_file:
+        for i,game in enumerate(games):
+            packed_data = struct.pack('iiif', int(game['appid']), int(game['positive_ratings']), int(game['negative_ratings']), float(sum([int(x) for x in game['owners'].split("-")]) / 2))
+            bin_file.write(packed_data)
         
 def read_from_index_file():
     index_games = []
@@ -58,3 +65,9 @@ def read_from_index_file():
             index_games.append(unpacked_data)
 
     return index_games
+
+# read_from_csv_file()
+# index_file_id_grades()
+# write_into_b_file()
+# index_file_position_id()
+# index_file_id_name()
