@@ -1,4 +1,3 @@
-import struct
 import bTree
 import read_csv_save_binary as rcsb
 import utils

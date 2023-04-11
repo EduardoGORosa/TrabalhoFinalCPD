@@ -1,6 +1,4 @@
-import struct
 from bisect import bisect_left
-import read_csv_save_binary as data
 
 class BTreeNode:
     def __init__(self, leaf=False):
